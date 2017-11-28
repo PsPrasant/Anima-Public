@@ -113,6 +113,9 @@ public:
     void SetInitialTransform(AffineTransformPointer initialTransform) {m_InitialTransform=initialTransform;}
     void SetInitialTransform(std::string initialTransformFile);
 
+    void SetDirectionTransform(AffineTransformPointer directionTransform) { m_DirectionTransform = directionTransform;}
+    void SetDirectionTransform(std::string directionTransformFile);
+
     BaseTransformPointer GetOutputTransform() {return m_OutputTransform;}
     void SetOutputTransform(BaseTransformPointer outputTransform) {m_OutputTransform=outputTransform;}
 
@@ -224,6 +227,7 @@ protected:
 
 private:
     AffineTransformPointer m_InitialTransform;
+    AffineTransformPointer m_DirectionTransform;
     BaseTransformPointer m_OutputTransform;
     InputImagePointer m_OutputImage;
 
