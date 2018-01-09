@@ -693,20 +693,20 @@ void PyramidalBlockMatchingBridge<ImageDimension>::SetupPyramids()
             typename ImageCalculatorType::Pointer fixedCalculator = ImageCalculatorType::New();
             fixedCalculator->SetImage(m_ReferenceImage);
             fixedCalculator->Compute();
-            ImageCalculatorType::VectorType fixedBar = fixedCalculator->GetCenterOfGravity();
+            typename ImageCalculatorType::VectorType fixedBar = fixedCalculator->GetCenterOfGravity();
 
             typename ImageCalculatorType::Pointer movingCalculator = ImageCalculatorType::New();
             movingCalculator->SetImage(m_FloatingImage);
             movingCalculator->Compute();
-            ImageCalculatorType::VectorType movingBar = movingCalculator->GetCenterOfGravity();
+            typename ImageCalculatorType::VectorType movingBar = movingCalculator->GetCenterOfGravity();
 
             if ((GetOutputTransformType() == outAnisotropic_Sim) || (GetOutputTransformType() == outAffine))
             {
-                ImageCalculatorType::VectorType fixedPrincipalMom = fixedCalculator->GetPrincipalMoments();
-                ImageCalculatorType::ScalarType fixedMass = fixedCalculator->GetTotalMass();
+                typename ImageCalculatorType::VectorType fixedPrincipalMom = fixedCalculator->GetPrincipalMoments();
+                typename ImageCalculatorType::ScalarType fixedMass = fixedCalculator->GetTotalMass();
 
-                ImageCalculatorType::VectorType movingPrincipalMom = movingCalculator->GetPrincipalMoments();
-                ImageCalculatorType::ScalarType movingMass = movingCalculator->GetTotalMass();
+                typename ImageCalculatorType::VectorType movingPrincipalMom = movingCalculator->GetPrincipalMoments();
+                typename ImageCalculatorType::ScalarType movingMass = movingCalculator->GetTotalMass();
 
                 vnl_matrix<double> scalMatrix(ImageDimension, ImageDimension, 0);
                 itk::Vector<double, ImageDimension> scalOffset;
