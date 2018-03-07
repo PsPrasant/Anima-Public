@@ -9,6 +9,12 @@
 namespace anima
 {
 
+double scaled_bessel_i(unsigned int N, double x)
+{
+    double logValue = log_bessel_i(N, x) - x;
+    return std::exp(logValue);
+}
+
 double log_bessel_i(unsigned int N, double x)
 {
     if (x < std::sqrt((double)N+1) / 100)
@@ -20,8 +26,11 @@ double log_bessel_i(unsigned int N, double x)
             return -std::log(std::tgamma(N+1)) + N * std::log(x / 2.0);
     }
 
-    if (x <= std::max(9.23 * N + 15.934, 11.26 * N - 236.21)) // before was 600; now garantees an absolute error of maximum 1e-4 between true function and approximation
-        return std::log(boost::math::cyl_bessel_i(N,x));
+    // if (x <= std::max(9.23 * N + 15.934, 11.26 * N - 236.21)) // before was 600; now garantees an absolute error of maximum 1e-4 between true function and approximation
+    //     return std::log(boost::math::cyl_bessel_i(N,x));
+
+    if (x <= 600)
+        return std::log(boost::math::cyl_bessel_i(N,x));        
 
 //        // Too big value, switching to approximation
 //        // Works less and less when orders go up but above that barrier we get non valid values
@@ -143,6 +152,26 @@ double ak_support(double x, unsigned int N, unsigned int k)
         return - x * (N+0.5) / (2.0 * (N + x * 0.5) * (N + x + 0.5));
     else
         return -x * (N + k - 0.5) / (2.0 * (N + x + (k - 1) * 0.5) * (N + x + k * 0.5));
+}
+
+double EvaluateRiceCDF(const double x, const double location, const double scale)
+{
+    double a = location / scale;
+    double b = x / scale;
+    unsigned int gridSize = 100;
+
+    double resVal = 0;
+
+    for (unsigned int i = 0;i < gridSize;++i)
+    {
+        double t = ((double)i / (double)gridSize);
+        double integrand = t * std::exp(-(b * t - a) * (b * t - a) / 2.0) * anima::scaled_bessel_i(0, a * b * t);
+        resVal += integrand;
+    }
+
+    resVal *= ((b * b) / gridSize);
+
+    return resVal;
 }
 
 } // end namespace anima

@@ -5,6 +5,9 @@
 namespace anima
 {
 
+//! Computes exp(-x) I_N(x)
+ANIMASPECIALFUNCTIONS_EXPORT double scaled_bessel_i(unsigned int N, double x);
+
 //! Computes a lower bound of the modified Bessel function of the first kind: I_{N} (N >= 0)
 ANIMASPECIALFUNCTIONS_EXPORT double bessel_i_lower_bound(unsigned int N, double x);
 
@@ -28,5 +31,8 @@ ANIMASPECIALFUNCTIONS_EXPORT double a0r_support(double x, unsigned int N);
 
 //! Support function for besserl_ratio_i
 ANIMASPECIALFUNCTIONS_EXPORT double ak_support(double x, unsigned int N, unsigned int k);
+
+//! Compute cumulative distribution function of Rice distribution (look at https://github.com/cscooper/ClusterLib/blob/master/src/MarcumQ.cc for generalized Marcum Q function computation)
+ANIMASPECIALFUNCTIONS_EXPORT double EvaluateRiceCDF(const double x, const double location, const double scale);
 
 } // end of namespace anima
