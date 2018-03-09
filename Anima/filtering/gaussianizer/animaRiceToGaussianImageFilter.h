@@ -38,11 +38,17 @@ public:
 	typedef itk::Image<unsigned char,ImageDimension> MaskImageType;
     typedef typename MaskImageType::Pointer MaskPointerType;
 
-    itkSetMacro(Radius, unsigned int)
+    typedef typename InputImageType::Pointer InputPointerType;
+
     itkSetMacro(MaximumNumberOfIterations, unsigned int)
     itkSetMacro(Epsilon, double)
     itkSetMacro(Sigma, double)
     itkSetMacro(SegmentationMask, MaskPointerType)
+    itkSetMacro(MeanImage, InputPointerType)
+    itkSetMacro(VarianceImage, InputPointerType) 
+
+    itkSetMacro(Scale, double)
+    itkGetConstMacro(Scale, double)
 
     typename OutputImageType::Pointer GetLocationImage() {return this->GetOutput(0);}
     typename OutputImageType::Pointer GetScaleImage() {return this->GetOutput(1);}
@@ -52,11 +58,16 @@ protected:
     RiceToGaussianImageFilter()
     : Superclass()
 	{
-        m_Radius = 1;
         m_MaximumNumberOfIterations = 100;
         m_Epsilon = 1.0e-8;
         m_Sigma = 1.0;
 	    m_SegmentationMask = NULL;
+        m_Scale = 0.0;
+        m_ThreadScaleSamples.clear();
+        m_NeighborWeights.clear();
+        m_Radius.Fill(0);
+        m_MeanImage = NULL;
+        m_VarianceImage = NULL;
 
 	    this->SetNumberOfRequiredOutputs(3);
 	    this->SetNthOutput(0, this->MakeOutput(0));
@@ -66,22 +77,34 @@ protected:
 
     virtual ~RiceToGaussianImageFilter() {}
 
+    void BeforeThreadedGenerateData(void) ITK_OVERRIDE;
     void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,
                               itk::ThreadIdType threadId) ITK_OVERRIDE;
+    void AfterThreadedGenerateData(void) ITK_OVERRIDE;
 
 private:
     ITK_DISALLOW_COPY_AND_ASSIGN(RiceToGaussianImageFilter);
 
-    double VarianceCorrectionFactor(const double theta);
-    double FixedPointFormula(const double theta, const double r);
+    double LowerBound(const unsigned int N);
+    double XiFunction(const double eta, const double sigma, const unsigned int N);
+    double XiFunction(const double theta, const unsigned int N);
+    double GFunction(const double eta, const double m, const double sigma, const unsigned int N);
+    double GFunction(const double theta, const unsigned int N, const double r);
+    double KFunction(const double eta, const double m, const double sigma, const unsigned int N);
+    double KFunction(const double theta, const unsigned int N, const double r);
+    double FixedPointFinder(const double m, const double sigma, const unsigned int N);
+    double FixedPointFinder(const double r, const unsigned int N);
     void GetRiceParameters(const std::vector<double> &samples, const std::vector<double> &weights, double &location, double &scale);
 
-    unsigned int m_Radius, m_MaximumNumberOfIterations;
-    double m_Epsilon, m_Sigma;
+    unsigned int m_MaximumNumberOfIterations;
+    double m_Epsilon, m_Sigma, m_Scale;
     MaskPointerType m_SegmentationMask;
+    std::vector<std::vector<double> > m_ThreadScaleSamples;
+    typename InputImageType::SizeType m_Radius;
+    std::vector<double> m_NeighborWeights;
+    InputPointerType m_MeanImage, m_VarianceImage;
 
     boost::math::normal_distribution<> m_NormalDistribution;
-    static const double m_LowerBound;
 };
 
 } // end of namespace anima

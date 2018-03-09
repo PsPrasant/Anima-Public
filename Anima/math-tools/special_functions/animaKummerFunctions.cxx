@@ -1,4 +1,5 @@
 #include <animaKummerFunctions.h>
+#include <animaBesselFunctions.h>
 #include <boost/math/special_functions/gamma.hpp>
 
 namespace anima
@@ -95,6 +96,9 @@ KummerFunction(const double &x,
                const unsigned int maxIter,
                const double tol)
 {
+  if (a == -0.5 && b == 1.0)
+    return (x < -600.0) ? std::sqrt(std::abs(x) / M_PI) * 2.0 : (1.0 - x) * anima::scaled_bessel_i(0, -x / 2.0) - x * anima::scaled_bessel_i(1, -x / 2.0);
+
     if (std::abs(x) < 50.0)
         return KummerMethod1(x,a,b,maxIter,tol);
     else
