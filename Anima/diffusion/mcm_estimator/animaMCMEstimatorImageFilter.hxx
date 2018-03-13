@@ -410,7 +410,7 @@ MCMEstimatorImageFilter<InputPixelType, OutputPixelType>
         // Load DWI
         for (unsigned int i = 0;i < m_NumberOfImages;++i)
             observedSignals[i] = inIterators[i].Get();
-
+        
         int moseValue = -1;
         bool estimateNonIsoCompartments = false;
         if (m_ExternalMoseVolume)
@@ -808,7 +808,7 @@ MCMEstimatorImageFilter<InputPixelType, OutputPixelType>
     workVec = mcmUpdateValue->GetParametersAsVector();
     for (unsigned int i = 0;i < dimension;++i)
         p[i] = workVec[i];
-
+    
     double costValue = this->PerformSingleOptimization(p,cost,lowerBounds,upperBounds);
     this->GetProfiledInformation(cost,mcmUpdateValue,b0Value,sigmaSqValue);
     
@@ -822,7 +822,7 @@ MCMEstimatorImageFilter<InputPixelType, OutputPixelType>
 
     if (m_CompartmentType == Stick)
         return;
-
+    
     // We're done with ball and stick, next up is ball and zeppelin
     // - First create model
     mcmCreator->SetCompartmentType(Zeppelin);
@@ -1236,6 +1236,16 @@ MCMEstimatorImageFilter<InputPixelType, OutputPixelType>
     MatrixType eigVecsTensor;
 
     eigenComputer.ComputeEigenValuesAndVectors(diffusionTensor, eigValsTensor, eigVecsTensor);
+    
+    bool zeroTensor = true;
+    for (unsigned int i = 0;i < 3;++i)
+    {
+        if (eigValsTensor[i] != 0)
+        {
+            zeroTensor = false;
+            break;
+        }
+    }
 
     // Correction in case eigen values are less than 0 (degenerated tensor)
     if (eigValsTensor[0] <= 0)
@@ -1251,10 +1261,17 @@ MCMEstimatorImageFilter<InputPixelType, OutputPixelType>
 
         eigenComputer.ComputeEigenValuesAndVectors(correctedTensor, eigValsTensor, eigVecsTensor);
     }
-
-    double linearCoefficient = (eigValsTensor[2] - eigValsTensor[1]) / eigValsTensor[2];
-    double planarCoefficient = (eigValsTensor[1] - eigValsTensor[0]) / eigValsTensor[2];
-    double sphericalCoefficient = eigValsTensor[0] / eigValsTensor[2];
+    
+    double linearCoefficient = 0.0;
+    double planarCoefficient = 0.0;
+    double sphericalCoefficient = 1.0;
+    
+    if (!zeroTensor)
+    {
+        linearCoefficient = (eigValsTensor[2] - eigValsTensor[1]) / eigValsTensor[2];
+        planarCoefficient = (eigValsTensor[1] - eigValsTensor[0]) / eigValsTensor[2];
+        sphericalCoefficient = eigValsTensor[0] / eigValsTensor[2];
+    }
 
     std::vector <double> sampledValues = generator.GetNextSequenceValue();
 
