@@ -440,7 +440,7 @@ RiceToGaussianImageFilter<ImageDimension>
         
         double inputSignal = inputItr.GetCenterPixel();
         
-        if (inputSignal == 0)
+        if (inputSignal <= 0)
         {
             locationItr.Set(static_cast<OutputPixelType>(inputSignal));
             scaleItr.Set(static_cast<OutputPixelType>(0));
