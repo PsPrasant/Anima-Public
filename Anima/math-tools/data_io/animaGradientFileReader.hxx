@@ -91,6 +91,7 @@ Update()
         startIndex = 0;
 
     std::string testExt = m_GradientFileName.substr(startIndex);
+    
     if (testExt.find("bvec") != std::string::npos)
         this->ReadGradientsFromBVecFile();
     else
@@ -209,7 +210,7 @@ ReadGradientsFromTextFile()
         gradTmp[0] = a0;
         gradTmp[1] = a1;
         gradTmp[2] = a2;
-
+        
         m_Gradients.push_back(gradTmp);
     }
 
@@ -240,7 +241,8 @@ ReadBValues()
         startIndex = 0;
 
     std::string testExt = m_BValueBaseString.substr(startIndex);
-    if (testExt.find("bval") != testExt.size())
+    
+    if (testExt.find("bval") != std::string::npos)
     {
         std::string workStr;
         do {
