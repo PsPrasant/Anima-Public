@@ -9,7 +9,7 @@ int main(int argc, char **argv)
     TCLAP::ValueArg<std::string> inArg("i", "inputfiles", "Input image list in text file", true, "", "input image list", cmd);
     TCLAP::ValueArg<std::string> outArg("o", "outputfile", "Output image", true, "", "output image", cmd);
     TCLAP::ValueArg<unsigned int> numThreadsArg("T", "threads", "Number of execution threads (default: 0 = all cores)", false, 0, "number of threads", cmd);
-    TCLAP::ValueArg<short> undecidedVoxelsLabelArg("u", "undecidedVoxels", "Undecided voxels label (default: -1)", false, -1, "undicided voxels label", cmd);
+    /*TCLAP::ValueArg<long> undecidedVoxelsLabelArg("u", "undecidedVoxels", "Undecided voxels label (default: -1)", false, -1, "undicided voxels label", cmd);*/
 
     try
     {
@@ -26,8 +26,8 @@ int main(int argc, char **argv)
     StapleFilterType::Pointer stapleFilter = StapleFilterType::New();
     if (numThreadsArg.getValue() != 0)
         stapleFilter->SetNumberOfThreads(numThreadsArg.getValue());
-    if (undecidedVoxelsLabelArg.getValue() != -1)
-        stapleFilter->SetLabelForUndecidedPixels(undecidedVoxelsLabelArg.getValue());
+    /*if (undecidedVoxelsLabelArg.getValue() != -1)
+        stapleFilter->SetLabelForUndecidedPixels(undecidedVoxelsLabelArg.getValue());*/
 
     unsigned int nbImages = 0;
     char refN[2048];
@@ -51,7 +51,6 @@ int main(int argc, char **argv)
 
     while (!imageIn.eof())
     {
-        std::cout << "tg" << std::endl;
         imageIn.getline(refN, 2048);
 
         if (strcmp(refN, "") == 0)
