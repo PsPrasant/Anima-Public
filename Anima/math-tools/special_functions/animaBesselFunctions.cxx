@@ -154,24 +154,4 @@ double ak_support(double x, unsigned int N, unsigned int k)
         return -x * (N + k - 0.5) / (2.0 * (N + x + (k - 1) * 0.5) * (N + x + k * 0.5));
 }
 
-double EvaluateRiceCDF(const double x, const double location, const double scale)
-{
-    double a = location / scale;
-    double b = x / scale;
-    unsigned int gridSize = 100;
-
-    double resVal = 0;
-
-    for (unsigned int i = 0;i < gridSize;++i)
-    {
-        double t = ((double)i / (double)gridSize);
-        double integrand = t * std::exp(-(b * t - a) * (b * t - a) / 2.0) * anima::scaled_bessel_i(0, a * b * t);
-        resVal += integrand;
-    }
-
-    resVal *= ((b * b) / gridSize);
-
-    return resVal;
-}
-
 } // end namespace anima

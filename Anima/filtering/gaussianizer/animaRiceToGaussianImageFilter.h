@@ -3,6 +3,7 @@
 #include <itkImageToImageFilter.h>
 
 #include <boost/math/distributions/normal.hpp>
+#include <boost/math/distributions/rayleigh.hpp>
 
 namespace anima
 {
@@ -87,17 +88,6 @@ protected:
 private:
     ITK_DISALLOW_COPY_AND_ASSIGN(RiceToGaussianImageFilter);
     
-    double LowerBound(const unsigned int N);
-    double XiFunction(const double eta, const double sigma, const unsigned int N);
-    double XiFunction(const double theta, const unsigned int N);
-    double GFunction(const double eta, const double m, const double sigma, const unsigned int N);
-    double GFunction(const double theta, const unsigned int N, const double r);
-    double KFunction(const double eta, const double m, const double sigma, const unsigned int N);
-    double KFunction(const double theta, const unsigned int N, const double r);
-    double FixedPointFinder(const double m, const double sigma, const unsigned int N);
-    double FixedPointFinder(const double r, const unsigned int N);
-    void GetRiceParameters(const std::vector<double> &samples, const std::vector<double> &weights, double &location, double &scale);
-    
     unsigned int m_MaximumNumberOfIterations;
     double m_Epsilon, m_Sigma, m_Scale;
     MaskPointerType m_SegmentationMask;
@@ -107,6 +97,7 @@ private:
     InputPointerType m_MeanImage, m_VarianceImage;
     
     boost::math::normal_distribution<> m_NormalDistribution;
+    boost::math::rayleigh_distribution<> m_RayleighDistribution;
 };
     
 } // end of namespace anima
