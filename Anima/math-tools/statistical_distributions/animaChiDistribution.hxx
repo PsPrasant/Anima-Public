@@ -141,14 +141,12 @@ void GetRiceParameters(const std::vector<double> &samples, const std::vector<dou
     }
     
     location = FixedPointFinder(meanValue, scale, 1);
-    scale = scale;
 }
 
-double EvaluateRiceCDF(const double x, const double location, const double scale)
+double GetRiceCDF(const double x, const double location, const double scale, const unsigned int gridSize)
 {
     double a = location / scale;
     double b = x / scale;
-    unsigned int gridSize = 100;
     
     double resVal = 0;
     

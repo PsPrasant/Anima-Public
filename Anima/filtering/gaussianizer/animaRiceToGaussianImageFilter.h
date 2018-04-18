@@ -1,6 +1,6 @@
 #pragma once
 
-#include <itkImageToImageFilter.h>
+#include <animaMaskedImageToImageFilter.h>
 
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/rayleigh.hpp>
@@ -9,7 +9,7 @@ namespace anima
 {
 template <unsigned int ImageDimension>
 class RiceToGaussianImageFilter :
-public itk::ImageToImageFilter<itk::Image<float,ImageDimension>,itk::Image<float,ImageDimension> >
+public anima::MaskedImageToImageFilter<itk::Image<float,ImageDimension>,itk::Image<float,ImageDimension> >
 {
 public:
     /** Standard class typedefs. */
@@ -21,7 +21,7 @@ public:
     typedef itk::Image<float,ImageDimension> OutputImageType;
     typedef typename OutputImageType::PixelType OutputPixelType;
     
-    typedef itk::ImageToImageFilter<InputImageType, OutputImageType> Superclass;
+    typedef anima::MaskedImageToImageFilter<InputImageType, OutputImageType> Superclass;
     
     typedef itk::SmartPointer<Self> Pointer;
     typedef itk::SmartPointer<const Self>  ConstPointer;
@@ -30,14 +30,12 @@ public:
     itkNewMacro(Self)
     
     /** Run-time type information (and related methods) */
-    itkTypeMacro(RiceToGaussianImageFilter, ImageToImageFilter)
+    itkTypeMacro(RiceToGaussianImageFilter, MaskedImageToImageFilter)
     
     /** Superclass typedefs. */
     typedef typename Superclass::InputImageRegionType InputImageRegionType;
     typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
-    
-    typedef itk::Image<unsigned char,ImageDimension> MaskImageType;
-    typedef typename MaskImageType::Pointer MaskPointerType;
+    typedef typename Superclass::MaskImageType MaskImageType;
     typedef typename MaskImageType::SizeType SizeType;
     
     typedef typename InputImageType::Pointer InputPointerType;
@@ -46,7 +44,6 @@ public:
     itkSetMacro(MaximumNumberOfIterations, unsigned int)
     itkSetMacro(Epsilon, double)
     itkSetMacro(Sigma, double)
-    itkSetMacro(SegmentationMask, MaskPointerType)
     itkSetMacro(MeanImage, InputPointerType)
     itkSetMacro(VarianceImage, InputPointerType)
     
@@ -64,7 +61,6 @@ protected:
         m_MaximumNumberOfIterations = 100;
         m_Epsilon = 1.0e-8;
         m_Sigma = 1.0;
-        m_SegmentationMask = NULL;
         m_Scale = 0.0;
         m_ThreadScaleSamples.clear();
         m_NeighborWeights.clear();
@@ -90,7 +86,6 @@ private:
     
     unsigned int m_MaximumNumberOfIterations;
     double m_Epsilon, m_Sigma, m_Scale;
-    MaskPointerType m_SegmentationMask;
     std::vector<std::vector<double> > m_ThreadScaleSamples;
     SizeType m_Radius;
     std::vector<double> m_NeighborWeights;

@@ -1,12 +1,11 @@
 #pragma once
-#include <animaRiceToGaussianImageFilter.h>
+#include "animaRiceToGaussianImageFilter.h"
 #include <animaChiDistribution.h>
 #include <animaVectorOperations.h>
 
 #include <itkConstNeighborhoodIterator.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkImageRegionIterator.h>
-#include <itkProgressReporter.h>
 #include <itkGaussianOperator.h>
 
 namespace anima
@@ -67,9 +66,7 @@ RiceToGaussianImageFilter<ImageDimension>
     InputIteratorType inputItr(m_Radius, this->GetInput(), outputRegionForThread);
     unsigned int neighborhoodSize = inputItr.Size();
     
-    MaskIteratorType maskItr;
-    if (m_SegmentationMask)
-        maskItr = MaskIteratorType(m_Radius, m_SegmentationMask, outputRegionForThread);
+    MaskIteratorType maskItr(m_Radius, this->GetComputationMask(), outputRegionForThread);
     
     InputSimpleIteratorType meanItr, varItr;
     if (m_MeanImage)
@@ -86,48 +83,17 @@ RiceToGaussianImageFilter<ImageDimension>
     typename InputImageType::IndexType currentIndex, neighborIndex;
     typename InputImageType::PointType currentPoint, neighborPoint;
     
-    // Support for progress methods/callbacks
-    itk::ProgressReporter progress(this, threadId, outputRegionForThread.GetNumberOfPixels());
-    
     while (!maskItr.IsAtEnd())
     {
-        if (m_SegmentationMask)
+        // Discard voxels outside of the brain
+        if (maskItr.GetCenterPixel() == 0)
         {
-            // Discard voxels outside of the brain
-            if (maskItr.GetCenterPixel() == 0)
-            {
-                locationItr.Set(0);
-                scaleItr.Set(0);
-                signalItr.Set(0);
-                
-                ++inputItr;
-                ++maskItr;
-                if (m_MeanImage)
-                    ++meanItr;
-                if (m_VarianceImage)
-                    ++varItr;
-                ++locationItr;
-                ++scaleItr;
-                ++signalItr;
-                
-                progress.CompletedPixel();
-                continue;
-            }
-        }
-        
-        // Get signal at current central voxel
-        double inputSignal = inputItr.GetCenterPixel();
-        
-        // Rice-corrupted signals should all be positive
-        if (inputSignal <= 0)
-        {
-            locationItr.Set(static_cast<OutputPixelType>(0));
-            scaleItr.Set(static_cast<OutputPixelType>(0));
-            signalItr.Set(static_cast<OutputPixelType>(0));
+            locationItr.Set(0);
+            scaleItr.Set(0);
+            signalItr.Set(0);
             
             ++inputItr;
-            if (m_SegmentationMask)
-                ++maskItr;
+            ++maskItr;
             if (m_MeanImage)
                 ++meanItr;
             if (m_VarianceImage)
@@ -136,7 +102,29 @@ RiceToGaussianImageFilter<ImageDimension>
             ++scaleItr;
             ++signalItr;
             
-            progress.CompletedPixel();
+            continue;
+        }
+        
+        // Get signal at current central voxel
+        double inputSignal = inputItr.GetCenterPixel();
+        
+        // Rice-corrupted signals should all be positive
+        if (inputSignal <= 0)
+        {
+            locationItr.Set(0);
+            scaleItr.Set(0);
+            signalItr.Set(0);
+            
+            ++inputItr;
+            ++maskItr;
+            if (m_MeanImage)
+                ++meanItr;
+            if (m_VarianceImage)
+                ++varItr;
+            ++locationItr;
+            ++scaleItr;
+            ++signalItr;
+            
             continue;
         }
         
@@ -166,9 +154,8 @@ RiceToGaussianImageFilter<ImageDimension>
                 
                 if (isInBounds && !std::isnan(tmpVal) && std::isfinite(tmpVal))
                 {
-                    if (m_SegmentationMask)
-                        if (maskItr.GetPixel(i) != maskItr.GetCenterPixel())
-                            continue;
+                    if (maskItr.GetPixel(i) != maskItr.GetCenterPixel())
+                        continue;
                     
                     double weight = m_NeighborWeights[i];
                     
@@ -198,24 +185,18 @@ RiceToGaussianImageFilter<ImageDimension>
             double unifSignal = boost::math::cdf(m_RayleighDistribution, inputSignal / scale);
             
             if (unifSignal >= 1.0 - m_Epsilon || unifSignal <= m_Epsilon)
-            {
-                outputSignal = location;
-                std::cout << "Outlier: " << inputItr.GetIndex() << std::endl;
-            }
-            else
-                outputSignal = scale * boost::math::quantile(m_NormalDistribution, unifSignal);
+                unifSignal = boost::math::cdf(m_RayleighDistribution, snrValue);
+            
+            outputSignal = scale * boost::math::quantile(m_NormalDistribution, unifSignal);
         }
         else if (snrValue <= 600) // if SNR if > 600 keep signal as is, else...
         {
-            double unifSignal = anima::EvaluateRiceCDF(inputSignal, location, scale);
+            double unifSignal = anima::GetRiceCDF(inputSignal, location, scale);
             
             if (unifSignal >= 1.0 - m_Epsilon || unifSignal <= m_Epsilon)
-            {
-                outputSignal = location;
-                std::cout << "Outlier: " << inputItr.GetIndex() << std::endl;
-            }
-            else
-                outputSignal = location + scale * boost::math::quantile(m_NormalDistribution, unifSignal);
+                unifSignal = anima::GetRiceCDF(location, location, scale);
+            
+            outputSignal = location + scale * boost::math::quantile(m_NormalDistribution, unifSignal);
         }
         
         m_ThreadScaleSamples[threadId].push_back(scale);
@@ -225,8 +206,7 @@ RiceToGaussianImageFilter<ImageDimension>
         signalItr.Set(static_cast<OutputPixelType>(outputSignal));
         
         ++inputItr;
-        if (m_SegmentationMask)
-            ++maskItr;
+        ++maskItr;
         if (m_MeanImage)
             ++meanItr;
         if (m_VarianceImage)
@@ -234,8 +214,6 @@ RiceToGaussianImageFilter<ImageDimension>
         ++locationItr;
         ++scaleItr;
         ++signalItr;
-        
-        progress.CompletedPixel();
     }
 }
 
