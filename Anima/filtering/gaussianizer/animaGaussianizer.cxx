@@ -32,72 +32,19 @@ int main(int ac, const char** av)
     
     TCLAP::CmdLine cmd("INRIA / IRISA - VisAGeS Team", ' ',ANIMA_VERSION);
     
-    TCLAP::ValueArg<std::string> inputArg("i",
-                                          "input",
-                                          "Input Rice-corrupted image",
-                                          true,
-                                          "",
-                                          "Input Rice-corrupted image",
-                                          cmd);
-    
-    TCLAP::ValueArg<std::string> outputArg("o",
-                                           "output",
-                                           "Output Gaussian-corrupted image",
-                                           true,
-                                           "",
-                                           "Output Gaussian-corrupted image",
-                                           cmd);
-    
-    TCLAP::ValueArg<std::string> scaleArg("s",
-                                          "scale",
-                                          "Output scale image",
-                                          false,
-                                          "",
-                                          "Output scale image",
-                                          cmd);
-    
-    TCLAP::ValueArg<std::string> maskArg("m",
-                                         "mask",
-                                         "Optional segmentation mask",
-                                         false,
-                                         "",
-                                         "Optional segmentation mask",
-                                         cmd);
-    
+    TCLAP::ValueArg<std::string> inputArg("i", "input", "Input Rice-corrupted image", true, "", "Input Rice-corrupted image", cmd);
+    TCLAP::ValueArg<std::string> outputArg("o", "output", "Output Gaussian-corrupted image", true, "", "Output Gaussian-corrupted image", cmd);
     TCLAP::ValueArg<std::string> bvecArg("g","grad","Input gradients",true,"","Input gradients",cmd);
     TCLAP::ValueArg<std::string> bvalArg("b","bval","Input b-values",true,"","Input b-values",cmd);
     
-    TCLAP::ValueArg<double> epsArg("E",
-                                   "epsilon",
-                                   "Minimal absolute value difference betweem fixed point iterations (default: 1e-8)",
-                                   false,
-                                   1.0e-8,
-                                   "Minimal absolute value difference betweem fixed point iterations",
-                                   cmd);
+    TCLAP::ValueArg<std::string> scaleArg("s", "scale", "Output scale image", false, "", "Output scale image", cmd);
+    TCLAP::ValueArg<std::string> maskArg("m", "mask", "Segmentation mask", false, "", "Segmentation mask", cmd);
     
-    TCLAP::ValueArg<double> sigmaArg("S",
-                                     "sigma",
-                                     "Gaussian standard deviation for defining neighbor weights (default: 1.0)",
-                                     false,
-                                     1.0,
-                                     "Gaussian standard deviation for defining neighbor weights",
-                                     cmd);
+    TCLAP::ValueArg<double> epsArg("E", "epsilon", "Minimal absolute value difference betweem fixed point iterations (default: 1e-8)", false, 1.0e-8, "Minimal absolute value difference betweem fixed point iterations", cmd);
+    TCLAP::ValueArg<double> sigmaArg("S", "sigma", "Gaussian standard deviation for defining neighbor weights (default: 1.0)", false, 1.0, "Gaussian standard deviation for defining neighbor weights", cmd);
     
-    TCLAP::ValueArg<unsigned int> maxiterArg("I",
-                                             "maxiter",
-                                             "Maximum number of iterations (default: 100)",
-                                             false,
-                                             100,
-                                             "Maximum number of iterations",
-                                             cmd);
-    
-    TCLAP::ValueArg<unsigned int> nbpArg("T",
-                                         "nbp",
-                                         "Number of threads to run on -> default : automatically determine",
-                                         false,
-                                         itk::MultiThreader::GetGlobalDefaultNumberOfThreads(),
-                                         "Number of threads",
-                                         cmd);
+    TCLAP::ValueArg<unsigned int> maxiterArg("I", "maxiter", "Maximum number of iterations (default: 100)", false, 100, "Maximum number of iterations", cmd);
+    TCLAP::ValueArg<unsigned int> nbpArg("T", "nbp", "Number of threads to run on -> default : automatically determine", false, itk::MultiThreader::GetGlobalDefaultNumberOfThreads(), "Number of threads", cmd);
     
     try
     {
@@ -297,8 +244,6 @@ int main(int ac, const char** av)
         }
         
         anima::writeImage<OutputImageType>(outputArg.getValue() + to_string(i + 1, 3) + ".nrrd", mainFilter->GetGaussianImage());
-        
-        return EXIT_SUCCESS;
     }
     
     return EXIT_SUCCESS;
