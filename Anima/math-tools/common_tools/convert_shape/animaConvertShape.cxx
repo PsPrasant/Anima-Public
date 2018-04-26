@@ -5,9 +5,12 @@
 
 int main(int ac, const char** av)
 {
-    TCLAP::CmdLine cmd("animaConverthape can be used to convert a VTK, VTP, CSV or FDS (medInria fiber format) file into another format. It does not check before writing fds "
-                       "that the file is actually made only of fibers.\n"
-                       "INRIA / IRISA - VisAGeS Team",' ',ANIMA_VERSION);
+    TCLAP::CmdLine cmd("animaConvertShape can be used to convert shape data "
+                       "back and forth between the following file formats: "
+                       "VTK, VTP, CSV or FDS (medInria fiber format). It "
+                       "does not check before writing fds that the file is "
+                       "actually made only of fibers.\n"
+                       "INRIA / IRISA - VisAGeS Team (and MOX - Politecnico di Milano for CSV support)",' ',ANIMA_VERSION);
 
     TCLAP::ValueArg<std::string> inputArg("i","in","input data filename",true,"","input data",cmd);
     TCLAP::ValueArg<std::string> outputArg("o","out","output data filename",true,"","output data",cmd);

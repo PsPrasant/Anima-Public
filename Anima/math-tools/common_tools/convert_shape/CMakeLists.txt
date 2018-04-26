@@ -1,6 +1,6 @@
 if(BUILD_TOOLS AND USE_VTK AND VTK_FOUND)
 
-project(animaConvertShapes)
+project(animaConvertShape)
 
 ## #############################################################################
 ## List Sources
