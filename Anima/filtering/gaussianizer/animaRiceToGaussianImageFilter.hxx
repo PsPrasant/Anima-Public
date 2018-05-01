@@ -137,9 +137,11 @@ RiceToGaussianImageFilter<ImageDimension>
             // If mean and variance images are available, use them instead of neighborhood
             double sigmaValue = std::sqrt(varItr.Get());
             double rValue = meanItr.Get() / sigmaValue;
-            double thetaValue = anima::FixedPointFinder(rValue, 1);
+            double k1Value = 0;
+            double thetaValue = anima::FixedPointFinder(rValue, 1, k1Value);
+            k1Value = anima::GetKummerM(-thetaValue * thetaValue / 2.0, -0.5, 1);
             
-            scale = sigmaValue / std::sqrt(anima::XiFunction(thetaValue, 1));
+            scale = sigmaValue / std::sqrt(anima::XiFunction(thetaValue * thetaValue, 1, k1Value, M_PI / 2.0));
             location = thetaValue * scale;
         }
         else
@@ -178,13 +180,18 @@ RiceToGaussianImageFilter<ImageDimension>
         double snrValue = location / scale;
         
         if (!std::isfinite(snrValue) || std::isnan(snrValue))
+        {
+            std::cout << snrValue << " " << location << " " << scale << std::endl;
             itkExceptionMacro("Estimated SNR is invalid");
+        }
         
-        if (snrValue <= 0.1)
+        if (snrValue <= m_Epsilon)
+            outputSignal = 0.0;
+        else if (snrValue <= 0.1)
         {
             double unifSignal = boost::math::cdf(m_RayleighDistribution, inputSignal / scale);
             
-            if (unifSignal >= 1.0 - m_Epsilon || unifSignal <= m_Epsilon)
+            if (unifSignal >= 1.0 - m_Alpha || unifSignal <= m_Alpha)
                 unifSignal = boost::math::cdf(m_RayleighDistribution, snrValue);
             
             outputSignal = scale * boost::math::quantile(m_NormalDistribution, unifSignal);
@@ -193,7 +200,7 @@ RiceToGaussianImageFilter<ImageDimension>
         {
             double unifSignal = anima::GetRiceCDF(inputSignal, location, scale);
             
-            if (unifSignal >= 1.0 - m_Epsilon || unifSignal <= m_Epsilon)
+            if (unifSignal >= 1.0 - m_Alpha || unifSignal <= m_Alpha)
                 unifSignal = anima::GetRiceCDF(location, location, scale);
             
             outputSignal = location + scale * boost::math::quantile(m_NormalDistribution, unifSignal);

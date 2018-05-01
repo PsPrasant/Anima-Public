@@ -50,6 +50,9 @@ public:
     itkSetMacro(Scale, double)
     itkGetConstMacro(Scale, double)
     
+    itkSetMacro(Alpha, double)
+    itkGetConstMacro(Alpha, double)
+    
     OutputPointerType GetLocationImage() {return this->GetOutput(0);}
     OutputPointerType GetScaleImage() {return this->GetOutput(1);}
     OutputPointerType GetGaussianImage() {return this->GetOutput(2);}
@@ -62,6 +65,7 @@ protected:
         m_Epsilon = 1.0e-8;
         m_Sigma = 1.0;
         m_Scale = 0.0;
+        m_Alpha = 0.005;
         m_ThreadScaleSamples.clear();
         m_NeighborWeights.clear();
         m_Radius.Fill(0);
@@ -85,7 +89,7 @@ private:
     ITK_DISALLOW_COPY_AND_ASSIGN(RiceToGaussianImageFilter);
     
     unsigned int m_MaximumNumberOfIterations;
-    double m_Epsilon, m_Sigma, m_Scale;
+    double m_Epsilon, m_Sigma, m_Scale, m_Alpha;
     std::vector<std::vector<double> > m_ThreadScaleSamples;
     SizeType m_Radius;
     std::vector<double> m_NeighborWeights;
