@@ -1,6 +1,5 @@
-#include <animaKummerFunctions.h>
-#include <animaBesselFunctions.h>
-#include <boost/math/special_functions/gamma.hpp>
+#include "animaKummerFunctions.h"
+#include <cmath>
 
 namespace anima
 {
@@ -80,11 +79,11 @@ KummerMethod2(const double &x,
     }
     
     if (x > 0)
-        resVal *= std::exp(x) * std::pow(x,(double)(a-b)) / boost::math::tgamma(a);
+        resVal *= std::exp(x) * std::pow(x,(double)(a-b)) / std::tgamma(a);
     else
-        resVal *= std::pow(-x,-1.0 * a) / boost::math::tgamma(b-a);
+        resVal *= std::pow(-x,-1.0 * a) / std::tgamma(b-a);
     
-    resVal *= boost::math::tgamma(b);
+    resVal *= std::tgamma(b);
     
     return resVal;
 }
@@ -96,9 +95,6 @@ KummerFunction(const double &x,
                const unsigned int maxIter,
                const double tol)
 {
-  if (a == -0.5 && b == 1.0)
-    return (x < -600.0) ? std::sqrt(std::abs(x) / M_PI) * 2.0 : (1.0 - x) * anima::scaled_bessel_i(0, -x / 2.0) - x * anima::scaled_bessel_i(1, -x / 2.0);
-
     if (std::abs(x) < 50.0)
         return KummerMethod1(x,a,b,maxIter,tol);
     else
